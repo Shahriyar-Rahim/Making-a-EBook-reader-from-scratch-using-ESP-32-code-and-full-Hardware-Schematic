@@ -51,8 +51,14 @@ static lv_obj_t* camera_result_ta   = nullptr;
 static lv_obj_t* voice_status_lbl   = nullptr;
 static lv_obj_t* voice_record_btn   = nullptr;
 static lv_obj_t* voice_record_btn_lbl = nullptr;
+static lv_obj_t* voice_play_pause_btn = nullptr;
+static lv_obj_t* voice_play_pause_btn_lbl = nullptr;
+static lv_obj_t* voice_stop_btn = nullptr;
+static lv_obj_t* voice_playback_slider = nullptr;
+static lv_obj_t* voice_playback_time_lbl = nullptr;
 static lv_obj_t* voice_list         = nullptr;
 static lv_timer_t* voice_record_timer = nullptr;
+static lv_timer_t* voice_playback_timer = nullptr;
 static String     voice_currently_playing;
 
 static lv_obj_t* settings_wifi_list = nullptr;
@@ -821,6 +827,41 @@ static void voice_rebuild_list() {
     }
 }
 
+static void voice_update_playback_ui(lv_timer_t* t) {
+    if (!voice_status_lbl || !voice_playback_slider || !voice_playback_time_lbl || !voice_play_pause_btn_lbl) return;
+
+    bool playing = audio_is_playing();
+    bool paused = audio_is_paused();
+    uint32_t elapsed = audio_playback_elapsed_sec();
+    uint32_t total = audio_playback_total_sec();
+    uint32_t percent = total > 0 ? (elapsed * 100) / total : 0;
+
+    if (!playing) {
+        if (audio_is_available()) {
+            lv_label_set_text(voice_status_lbl, "Ready to record.");
+        } else {
+            lv_label_set_text(voice_status_lbl, LV_SYMBOL_WARNING " Mic/speaker not detected.\nWire an I2S mic + amp and check audio_engine.h pins.");
+        }
+        lv_slider_set_value(voice_playback_slider, 0, LV_ANIM_OFF);
+        lv_label_set_text_fmt(voice_playback_time_lbl, "00:00 / %02lu:%02lu",
+            (unsigned long)(total / 60), (unsigned long)(total % 60));
+        lv_label_set_text(voice_play_pause_btn_lbl, LV_SYMBOL_PLAY "  Pause");
+        return;
+    }
+
+    lv_slider_set_value(voice_playback_slider, percent, LV_ANIM_OFF);
+    lv_label_set_text_fmt(voice_playback_time_lbl, "%02lu:%02lu / %02lu:%02lu",
+        (unsigned long)(elapsed / 60), (unsigned long)(elapsed % 60),
+        (unsigned long)(total / 60), (unsigned long)(total % 60));
+    if (paused) {
+        lv_label_set_text(voice_status_lbl, (LV_SYMBOL_PAUSE " Paused: " + voice_currently_playing).c_str());
+        lv_label_set_text(voice_play_pause_btn_lbl, LV_SYMBOL_PLAY "  Resume");
+    } else {
+        lv_label_set_text(voice_status_lbl, (LV_SYMBOL_PLAY " Playing: " + voice_currently_playing).c_str());
+        lv_label_set_text(voice_play_pause_btn_lbl, LV_SYMBOL_PAUSE "  Pause");
+    }
+}
+
 static void voice_record_tick_cb(lv_timer_t* t) {
     if (!audio_is_recording()) return;
     uint32_t sec = audio_record_elapsed_sec();
@@ -828,6 +869,31 @@ static void voice_record_tick_cb(lv_timer_t* t) {
         lv_label_set_text_fmt(voice_status_lbl, LV_SYMBOL_AUDIO "  Recording... %lu:%02lu",
             (unsigned long)(sec / 60), (unsigned long)(sec % 60));
     }
+}
+
+static void voice_play_pause_btn_cb(lv_event_t* e) {
+    if (!audio_is_playing()) return;
+    if (audio_is_paused()) {
+        audio_request_resume_playback();
+    } else {
+        audio_request_pause_playback();
+    }
+}
+
+static void voice_stop_btn_cb(lv_event_t* e) {
+    if (!audio_is_playing()) return;
+    audio_stop_playback();
+}
+
+static void voice_playback_slider_cb(lv_event_t* e) {
+    if (!audio_is_playing()) return;
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code != LV_EVENT_RELEASED && code != LV_EVENT_VALUE_CHANGED) return;
+
+    int value = lv_slider_get_value(voice_playback_slider);
+    uint32_t total = audio_playback_total_sec();
+    uint32_t target = (uint32_t)value * total / 100;
+    audio_request_seek_playback(target);
 }
 
 static void voice_record_btn_cb(lv_event_t* e) {
@@ -880,11 +946,43 @@ static void build_tab_voice() {
     lv_obj_center(voice_record_btn_lbl);
     lv_obj_add_event_cb(voice_record_btn, voice_record_btn_cb, LV_EVENT_CLICKED, nullptr);
 
+    voice_play_pause_btn = lv_btn_create(tab_voice);
+    lv_obj_set_size(voice_play_pause_btn, 140, 40);
+    lv_obj_align_to(voice_play_pause_btn, voice_record_btn, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    lv_obj_set_style_bg_color(voice_play_pause_btn, lv_color_make(37,99,235), 0);
+    voice_play_pause_btn_lbl = lv_label_create(voice_play_pause_btn);
+    lv_label_set_text(voice_play_pause_btn_lbl, LV_SYMBOL_PLAY "  Pause");
+    lv_obj_center(voice_play_pause_btn_lbl);
+    lv_obj_add_event_cb(voice_play_pause_btn, voice_play_pause_btn_cb, LV_EVENT_CLICKED, nullptr);
+
+    voice_stop_btn = lv_btn_create(tab_voice);
+    lv_obj_set_size(voice_stop_btn, 140, 40);
+    lv_obj_align_to(voice_stop_btn, voice_play_pause_btn, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    lv_obj_set_style_bg_color(voice_stop_btn, lv_color_make(127,29,29), 0);
+    lv_obj_t* stop_lbl = lv_label_create(voice_stop_btn);
+    lv_label_set_text(stop_lbl, LV_SYMBOL_STOP);
+    lv_obj_center(stop_lbl);
+    lv_obj_add_event_cb(voice_stop_btn, voice_stop_btn_cb, LV_EVENT_CLICKED, nullptr);
+
+    voice_playback_slider = lv_slider_create(tab_voice);
+    lv_obj_set_width(voice_playback_slider, 300);
+    lv_obj_align_to(voice_playback_slider, voice_play_pause_btn, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    lv_slider_set_range(voice_playback_slider, 0, 100);
+    lv_slider_set_value(voice_playback_slider, 0, LV_ANIM_OFF);
+    lv_obj_add_event_cb(voice_playback_slider, voice_playback_slider_cb, LV_EVENT_RELEASED, nullptr);
+    lv_obj_add_event_cb(voice_playback_slider, voice_playback_slider_cb, LV_EVENT_VALUE_CHANGED, nullptr);
+
+    voice_playback_time_lbl = lv_label_create(tab_voice);
+    lv_label_set_text(voice_playback_time_lbl, "00:00 / 00:00");
+    lv_obj_set_style_text_font(voice_playback_time_lbl, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_color(voice_playback_time_lbl, lv_color_make(148,163,184), 0);
+    lv_obj_align_to(voice_playback_time_lbl, voice_playback_slider, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 6);
+
     lv_obj_t* list_title = lv_label_create(tab_voice);
     lv_label_set_text(list_title, "Saved Notes");
     lv_obj_set_style_text_font(list_title, &lv_font_montserrat_12, 0);
     lv_obj_set_style_text_color(list_title, lv_color_make(56,189,248), 0);
-    lv_obj_align_to(list_title, voice_record_btn, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10);
+    lv_obj_align_to(list_title, voice_playback_time_lbl, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
     voice_list = lv_obj_create(tab_voice);
     lv_obj_set_size(voice_list, LV_PCT(100), 220);
@@ -896,6 +994,10 @@ static void build_tab_voice() {
     lv_obj_set_style_pad_row(voice_list, 6, 0);
 
     voice_rebuild_list();
+
+    if (!voice_playback_timer) {
+        voice_playback_timer = lv_timer_create(voice_update_playback_ui, 500, nullptr);
+    }
 }
 
 // ─────────────────────────────────────────────

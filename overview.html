@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Overview | ESP32-S3 CAM AI eBook Reader</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div class="page-wrap">
+    <aside class="sidebar">
+      <div class="logo">ESP32-S3 CAM AI eBook Reader</div>
+      <div class="nav-search">
+        <input id="search-input" type="search" placeholder="Search docs..." />
+      </div>
+      <nav>
+        <ul class="nav-list">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="overview.html">Overview</a></li>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="architecture.html">Architecture</a></li>
+          <li><a href="hardware.html">Hardware</a></li>
+          <li><a href="software.html">Software</a></li>
+          <li><a href="wiring.html">Wiring</a></li>
+          <li><a href="breadboard.html">Breadboard</a></li>
+          <li><a href="veroboard.html">Veroboard</a></li>
+          <li><a href="pcb.html">PCB</a></li>
+          <li><a href="power-system.html">Power System</a></li>
+          <li><a href="display-system.html">Display System</a></li>
+          <li><a href="camera-system.html">Camera System</a></li>
+          <li><a href="audio-system.html">Audio System</a></li>
+          <li><a href="ai-system.html">AI System</a></li>
+          <li><a href="ocr-system.html">OCR System</a></li>
+          <li><a href="ebook-reader.html">eBook Reader</a></li>
+          <li><a href="sd-storage.html">SD Storage</a></li>
+          <li><a href="networking.html">Networking</a></li>
+          <li><a href="assembly-guide.html">Assembly Guide</a></li>
+          <li><a href="bill-of-materials.html">Bill of Materials</a></li>
+          <li><a href="troubleshooting.html">Troubleshooting</a></li>
+          <li><a href="future-roadmap.html">Future Roadmap</a></li>
+        </ul>
+      </nav>
+      <button class="toggle-theme" data-theme-toggle>Light Mode</button>
+    </aside>
+    <main class="main">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>/</span> Overview</div>
+      <div class="section">
+        <h1>Project Overview</h1>
+        <p>The ESP32-S3 CAM AI eBook Reader is a purpose-built integrated reading device combining text display, a camera for OCR, voice note recording, cloud AI assistance, and Wi-Fi networking. It is designed for learners, students, and professionals who need a compact, offline-capable reading tool with intelligent study support.</p>
+      </div>
+      <div class="section grid-two">
+        <div class="panel">
+          <h2>Why this project exists</h2>
+          <p>This project addresses the gap between standard eReaders and experimental AI devices by integrating a complete hardware-software platform around the ESP32-S3 CAM. It adds cloud AI assistance, offline voice note capture, and OCR scanning while preserving the portability and low cost of embedded hardware.</p>
+          <ul class="list-panel searchable">
+            <li>Self-contained eBook reader with AI-enhanced study tools</li>
+            <li>Camera-based text capture and scanning workflow</li>
+            <li>Voice note recording and playback</li>
+            <li>Expandable TTS/STT architecture for future audio books</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h2>Target Users</h2>
+          <ul class="list-panel searchable">
+            <li>Students who study with digital textbooks and need summarization</li>
+            <li>Researchers who want fast note capture with OCR and cloud AI</li>
+            <li>Language learners who want vocabulary, quizzes, and reading assistance</li>
+            <li>Developers and makers who want a platform for embedded AI experiments</li>
+          </ul>
+        </div>
+      </div>
+      <div class="section">
+        <h2>Use Cases</h2>
+        <div class="card-grid searchable">
+          <div class="card"><h3>eBook Reader</h3><p>Read text files and EPUBs using a responsive LVGL interface with theme and font controls.</p></div>
+          <div class="card"><h3>AI Assistant</h3><p>Summarize content, generate study questions, and chat with the book context through cloud AI.</p></div>
+          <div class="card"><h3>OCR Scanner</h3><p>Capture text from paper pages with the ESP32-S3 camera and process it into editable text.</p></div>
+          <div class="card"><h3>Digital Notebook</h3><p>Save notes, voice clips, and transcriptions to SD storage for review and research.</p></div>
+        </div>
+      </div>
+      <div class="section panel searchable">
+        <h2>System Highlights</h2>
+        <ol>
+          <li>ESP32-S3 CAM core handles display, camera, networking, and AI interfacing.</li>
+          <li>LVGL-based UI on a color SPI display with touch input and reader controls.</li>
+          <li>Voice note recording via INMP441 mic and playback through MAX98357A amplifier.</li>
+          <li>Cloud-enabled AI integrations for summarization, notes, and Q&A.</li>
+        </ol>
+      </div>
+    </main>
+  </div>
+  <footer class="footer">ESP32-S3 CAM AI eBook Reader Documentation • Project Overview</footer>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

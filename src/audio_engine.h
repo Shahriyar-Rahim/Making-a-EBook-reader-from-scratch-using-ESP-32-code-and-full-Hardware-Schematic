@@ -62,6 +62,13 @@ uint32_t audio_record_elapsed_sec();
 void audio_play_file(const String& filepath, AudioDoneCallback callback);
 void audio_stop_playback();     // request early stop from another task
 bool audio_is_playing();
+bool audio_is_paused();
+uint32_t audio_playback_elapsed_sec();
+uint32_t audio_playback_total_sec();
+String audio_playback_filename();
+void audio_request_pause_playback();
+void audio_request_resume_playback();
+void audio_request_seek_playback(uint32_t seconds);
 
 // Library management
 std::vector<VoiceNote> audio_list_voice_notes();

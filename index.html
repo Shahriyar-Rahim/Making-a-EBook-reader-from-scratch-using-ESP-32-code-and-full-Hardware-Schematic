@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ESP32-S3 CAM AI eBook Reader Docs</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div class="page-wrap">
+    <aside class="sidebar">
+      <div class="logo">ESP32-S3 CAM AI eBook Reader</div>
+      <div class="nav-search">
+        <input id="search-input" type="search" placeholder="Search docs..." />
+      </div>
+      <nav>
+        <ul class="nav-list">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="overview.html">Overview</a></li>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="architecture.html">Architecture</a></li>
+          <li><a href="hardware.html">Hardware</a></li>
+          <li><a href="software.html">Software</a></li>
+          <li><a href="wiring.html">Wiring</a></li>
+          <li><a href="breadboard.html">Breadboard</a></li>
+          <li><a href="veroboard.html">Veroboard</a></li>
+          <li><a href="pcb.html">PCB</a></li>
+          <li><a href="power-system.html">Power System</a></li>
+          <li><a href="display-system.html">Display System</a></li>
+          <li><a href="camera-system.html">Camera System</a></li>
+          <li><a href="audio-system.html">Audio System</a></li>
+          <li><a href="ai-system.html">AI System</a></li>
+          <li><a href="ocr-system.html">OCR System</a></li>
+          <li><a href="ebook-reader.html">eBook Reader</a></li>
+          <li><a href="sd-storage.html">SD Storage</a></li>
+          <li><a href="networking.html">Networking</a></li>
+          <li><a href="assembly-guide.html">Assembly Guide</a></li>
+          <li><a href="bill-of-materials.html">Bill of Materials</a></li>
+          <li><a href="troubleshooting.html">Troubleshooting</a></li>
+          <li><a href="future-roadmap.html">Future Roadmap</a></li>
+        </ul>
+      </nav>
+      <button class="toggle-theme" data-theme-toggle>Light Mode</button>
+    </aside>
+    <main class="main">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>/</span> Dashboard</div>
+      <div class="header">
+        <div>
+          <h1 class="header-title">ESP32-S3 CAM AI eBook Reader</h1>
+          <p class="header-copy">A professional static documentation portal for the ESP32-S3 CAM AI eBook Reader project, designed for GitHub Pages deployment.</p>
+        </div>
+      </div>
+      <section class="section">
+        <div class="hero-grid">
+          <div>
+            <h2>Project Overview</h2>
+            <p>The ESP32-S3 CAM AI eBook Reader is a custom embedded platform for reading, voice notes, AI-assisted study, OCR scanning, and intelligent content playback. This documentation portal covers the full hardware, firmware, and system architecture.</p>
+            <div class="small-grid">
+              <div class="stat-card"><strong>1</strong><span>Project site</span></div>
+              <div class="stat-card"><strong>18</strong><span>Documentation pages</span></div>
+              <div class="stat-card"><strong>40+</strong><span>Mapped connections</span></div>
+              <div class="stat-card"><strong>2</strong><span>Core tasks</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Quick Start</h3>
+            <ul class="list-panel">
+              <li>Mount the ESP32-S3 CAM</li>
+              <li>Wire the display, touch, SD, and audio</li>
+              <li>Flash firmware via PlatformIO</li>
+              <li>Open the docs for wiring, software, and AI features</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+      <section class="section">
+        <h2>Navigation Cards</h2>
+        <div class="card-grid searchable">
+          <div class="card"><h3>Hardware</h3><p>Design notes, component specifications, and electrical system details.</p></div>
+          <div class="card"><h3>Audio</h3><p>Existing voice note recording, playback, and planned TTS/STT architecture.</p></div>
+          <div class="card"><h3>AI System</h3><p>Cloud integration, prompt engineering, and AI study assistant flows.</p></div>
+          <div class="card"><h3>Assembly</h3><p>Step-by-step build instructions, breadboard layout, and PCB planning.</p></div>
+        </div>
+      </section>
+      <section class="section grid-two searchable">
+        <div class="panel">
+          <h2>System Overview</h2>
+          <p>The documentation portal presents the embedded system as a complete stack, bridging sensor hardware, LVGL display, audio subsystems, camera OCR, cloud AI, and storage.</p>
+          <div class="svg-frame"><svg width="100%" height="280" viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bggrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0f172a"/><stop offset="100%" stop-color="#0f172a" stop-opacity="0.5"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000" flood-opacity="0.18"/></filter></defs><rect x="0" y="0" width="900" height="280" rx="24" fill="url(#bggrad)"/><rect x="52" y="64" width="176" height="152" rx="18" fill="#111827" stroke="#1f2937" stroke-width="2" filter="url(#shadow)"/><text x="140" y="88" fill="#38bdf8" font-size="16" text-anchor="middle">ESP32-S3 CAM</text><rect x="292" y="24" width="156" height="72" rx="16" fill="#111827" stroke="#1f2937" stroke-width="2" filter="url(#shadow)"/><text x="370" y="55" fill="#38bdf8" font-size="14" text-anchor="middle">Display</text><line x1="228" y1="110" x2="292" y2="60" stroke="#38bdf8" stroke-width="2" stroke-dasharray="8 6"/><rect x="292" y="182" width="156" height="80" rx="16" fill="#111827" stroke="#1f2937" stroke-width="2" filter="url(#shadow)"/><text x="370" y="217" fill="#38bdf8" font-size="14" text-anchor="middle">Audio</text><line x1="228" y1="170" x2="292" y2="214" stroke="#38bdf8" stroke-width="2" stroke-dasharray="8 6"/><rect x="562" y="64" width="320" height="80" rx="16" fill="#111827" stroke="#1f2937" stroke-width="2" filter="url(#shadow)"/><text x="722" y="98" fill="#38bdf8" font-size="14" text-anchor="middle">SD + Storage</text><line x1="228" y1="100" x2="562" y2="100" stroke="#38bdf8" stroke-width="2" stroke-dasharray="8 6"/><rect x="562" y="166" width="320" height="80" rx="16" fill="#111827" stroke="#1f2937" stroke-width="2" filter="url(#shadow)"/><text x="722" y="200" fill="#38bdf8" font-size="14" text-anchor="middle">AI + Networking</text><line x1="228" y1="160" x2="562" y2="206" stroke="#38bdf8" stroke-width="2" stroke-dasharray="8 6"/></svg></div>
+        </div>
+        <div class="panel">
+          <h2>Stats</h2>
+          <div class="stat-card"><strong>ESP32-S3</strong><span>Dual-core MCU with vector acceleration</span></div>
+          <div class="stat-card"><strong>16 MB</strong><span>Flash storage capacity in target board</span></div>
+          <div class="stat-card"><strong>8 pages</strong><span>Documentation core content</span></div>
+          <div class="stat-card"><strong>Existing audio</strong><span>Voice notes & playback are already implemented</span></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <footer class="footer">ESP32-S3 CAM AI eBook Reader Documentation • Generated for GitHub Pages</footer>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

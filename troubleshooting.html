@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Troubleshooting | ESP32-S3 CAM AI eBook Reader</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div class="page-wrap">
+    <aside class="sidebar">
+      <div class="logo">ESP32-S3 CAM AI eBook Reader</div>
+      <div class="nav-search">
+        <input id="search-input" type="search" placeholder="Search docs..." />
+      </div>
+      <nav>
+        <ul class="nav-list">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="overview.html">Overview</a></li>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="architecture.html">Architecture</a></li>
+          <li><a href="hardware.html">Hardware</a></li>
+          <li><a href="software.html">Software</a></li>
+          <li><a href="wiring.html">Wiring</a></li>
+          <li><a href="breadboard.html">Breadboard</a></li>
+          <li><a href="veroboard.html">Veroboard</a></li>
+          <li><a href="pcb.html">PCB</a></li>
+          <li><a href="power-system.html">Power System</a></li>
+          <li><a href="display-system.html">Display System</a></li>
+          <li><a href="camera-system.html">Camera System</a></li>
+          <li><a href="audio-system.html">Audio System</a></li>
+          <li><a href="ai-system.html">AI System</a></li>
+          <li><a href="ocr-system.html">OCR System</a></li>
+          <li><a href="ebook-reader.html">eBook Reader</a></li>
+          <li><a href="sd-storage.html">SD Storage</a></li>
+          <li><a href="networking.html">Networking</a></li>
+          <li><a href="assembly-guide.html">Assembly Guide</a></li>
+          <li><a href="bill-of-materials.html">Bill of Materials</a></li>
+          <li><a href="troubleshooting.html">Troubleshooting</a></li>
+          <li><a href="future-roadmap.html">Future Roadmap</a></li>
+        </ul>
+      </nav>
+      <button class="toggle-theme" data-theme-toggle>Light Mode</button>
+    </aside>
+    <main class="main">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>/</span> Troubleshooting</div>
+      <div class="section">
+        <h1>Troubleshooting</h1>
+        <p>Resolve common issues with the ESP32-S3 CAM AI eBook Reader hardware and firmware.</p>
+      </div>
+      <div class="section searchable">
+        <h2>Display Issues</h2>
+        <ul class="list-panel">
+          <li>Check display power and SPI connections.</li>
+          <li>Verify the correct display driver pins are configured in firmware.</li>
+          <li>Confirm the touch controller is wired to the same SPI bus.</li>
+        </ul>
+      </div>
+      <div class="section searchable">
+        <h2>Camera Issues</h2>
+        <ul class="list-panel">
+          <li>Ensure the camera ribbon is seated correctly.</li>
+          <li>Use proper lighting for OCR captures.</li>
+          <li>Test camera and boot logs separately to isolate initialization failures.</li>
+        </ul>
+      </div>
+      <div class="section searchable">
+        <h2>Audio Issues</h2>
+        <ul class="list-panel">
+          <li>Verify I2S microphone and speaker wiring.</li>
+          <li>Inspect SD card formatting to ensure WAV file writes succeed.</li>
+          <li>Check firmware logs for audio engine state changes.</li>
+        </ul>
+      </div>
+    </main>
+  </div>
+  <footer class="footer">ESP32-S3 CAM AI eBook Reader Documentation • Troubleshooting</footer>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wiring | ESP32-S3 CAM AI eBook Reader</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div class="page-wrap">
+    <aside class="sidebar">
+      <div class="logo">ESP32-S3 CAM AI eBook Reader</div>
+      <div class="nav-search">
+        <input id="search-input" type="search" placeholder="Search docs..." />
+      </div>
+      <nav>
+        <ul class="nav-list">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="overview.html">Overview</a></li>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="architecture.html">Architecture</a></li>
+          <li><a href="hardware.html">Hardware</a></li>
+          <li><a href="software.html">Software</a></li>
+          <li><a href="wiring.html">Wiring</a></li>
+          <li><a href="breadboard.html">Breadboard</a></li>
+          <li><a href="veroboard.html">Veroboard</a></li>
+          <li><a href="pcb.html">PCB</a></li>
+          <li><a href="power-system.html">Power System</a></li>
+          <li><a href="display-system.html">Display System</a></li>
+          <li><a href="camera-system.html">Camera System</a></li>
+          <li><a href="audio-system.html">Audio System</a></li>
+          <li><a href="ai-system.html">AI System</a></li>
+          <li><a href="ocr-system.html">OCR System</a></li>
+          <li><a href="ebook-reader.html">eBook Reader</a></li>
+          <li><a href="sd-storage.html">SD Storage</a></li>
+          <li><a href="networking.html">Networking</a></li>
+          <li><a href="assembly-guide.html">Assembly Guide</a></li>
+          <li><a href="bill-of-materials.html">Bill of Materials</a></li>
+          <li><a href="troubleshooting.html">Troubleshooting</a></li>
+          <li><a href="future-roadmap.html">Future Roadmap</a></li>
+        </ul>
+      </nav>
+      <button class="toggle-theme" data-theme-toggle>Light Mode</button>
+    </aside>
+    <main class="main">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>/</span> Wiring</div>
+      <div class="section">
+        <h1>Wiring</h1>
+        <p>This page describes the wiring connections for the ESP32-S3 CAM AI eBook Reader, including the display, touch controller, camera, audio, and SD card.</p>
+      </div>
+      <div class="section grid-two searchable">
+        <div class="panel">
+          <h2>SPI Display</h2>
+          <ul class="list-panel">
+            <li>Display SCK to ESP32-S3 SPI clock pin</li>
+            <li>Display MOSI to ESP32-S3 SPI MOSI pin</li>
+            <li>Display CS to a dedicated chip select pin</li>
+            <li>Display DC and RESET to GPIO control pins</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h2>Touch Controller</h2>
+          <ul class="list-panel">
+            <li>XPT2046 CS to GPIO</li>
+            <li>XPT2046 CLK, DIN, DOUT to shared SPI lines</li>
+            <li>Touch IRQ to a GPIO interrupt pin</li>
+          </ul>
+        </div>
+      </div>
+      <div class="section grid-two searchable">
+        <div class="panel">
+          <h2>Camera</h2>
+          <p>Connect the camera ribbon to the ESP32-S3 CAM module socket. Ensure the connector is fully seated and the ribbon is oriented correctly.</p>
+        </div>
+        <div class="panel">
+          <h2>SD Card</h2>
+          <p>SD card signals use SPI or SDMMC depending on board support. Wire CS, MISO, MOSI, and CLK from the SD socket to the ESP32-S3 bus, and connect power and ground securely.</p>
+        </div>
+      </div>
+      <div class="section panel searchable">
+        <h2>Audio</h2>
+        <ul class="list-panel">
+          <li>INMP441 microphone connected to I2S input pins</li>
+          <li>MAX98357A speaker amplifier connected to I2S output pins</li>
+          <li>Power amplifier with 3.3V and GND</li>
+        </ul>
+      </div>
+    </main>
+  </div>
+  <footer class="footer">ESP32-S3 CAM AI eBook Reader Documentation • Wiring</footer>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

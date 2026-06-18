@@ -39,6 +39,14 @@ static uint32_t record_start_ms   = 0;
 
 static volatile bool stop_playback_requested = false;
 static volatile bool is_playing = false;
+static volatile bool is_paused = false;
+static volatile bool seek_requested = false;
+static volatile uint32_t seek_target_sec = 0;
+static uint32_t playback_total_sec = 0;
+static uint32_t playback_elapsed_sec = 0;
+static uint32_t playback_total_bytes = 0;
+static uint32_t playback_elapsed_bytes = 0;
+static char playback_filename_buf[128] = "";
 
 // ─────────────────────────────────────────────
 //  WAV header (44 bytes, PCM, mono, 16-bit)
@@ -259,12 +267,36 @@ void audio_play_file(const String& filepath, AudioDoneCallback callback) {
     f.seek(44);
 
     is_playing = true;
+    is_paused = false;
     stop_playback_requested = false;
+    seek_requested = false;
+    playback_elapsed_bytes = 0;
+    playback_elapsed_sec = 0;
+    playback_total_bytes = (f.size() > 44) ? (f.size() - 44) : 0;
+    playback_total_sec = playback_total_bytes / (SAMPLE_RATE * 2);
+    playback_elapsed_sec = 0;
+    strncpy(playback_filename_buf, filepath.c_str(), sizeof(playback_filename_buf) - 1);
 
     static int16_t buf[1024];
     bool ok = true;
 
-    while (f.available() && !stop_playback_requested) {
+    while (!stop_playback_requested) {
+        if (seek_requested) {
+            uint32_t target_bytes = seek_target_sec * SAMPLE_RATE * 2;
+            if (target_bytes > playback_total_bytes) target_bytes = playback_total_bytes;
+            f.seek(44 + target_bytes);
+            playback_elapsed_bytes = target_bytes;
+            playback_elapsed_sec = playback_elapsed_bytes / (SAMPLE_RATE * 2);
+            seek_requested = false;
+        }
+
+        if (is_paused) {
+            vTaskDelay(pdMS_TO_TICKS(100));
+            continue;
+        }
+
+        if (!f.available()) break;
+
         size_t got;
         if (xSemaphoreTake(sd_mutex, pdMS_TO_TICKS(200)) == pdTRUE) {
             got = f.read((uint8_t*)buf, sizeof(buf));
@@ -277,6 +309,9 @@ void audio_play_file(const String& filepath, AudioDoneCallback callback) {
         size_t bytes_written = 0;
         esp_err_t err = i2s_write(I2S_NUM_1, buf, got, &bytes_written, pdMS_TO_TICKS(500));
         if (err != ESP_OK) { ok = false; break; }
+
+        playback_elapsed_bytes += got;
+        playback_elapsed_sec = playback_elapsed_bytes / (SAMPLE_RATE * 2);
     }
 
     if (xSemaphoreTake(sd_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
@@ -286,12 +321,32 @@ void audio_play_file(const String& filepath, AudioDoneCallback callback) {
 
     i2s_zero_dma_buffer(I2S_NUM_1);
     is_playing = false;
+    is_paused = false;
+    if (!stop_playback_requested) {
+        playback_elapsed_sec = playback_total_sec;
+    }
 
     if (callback) callback(ok && !stop_playback_requested);
 }
 
-void audio_stop_playback() { stop_playback_requested = true; }
+void audio_stop_playback() { stop_playback_requested = true; is_paused = false; }
 bool audio_is_playing()    { return is_playing; }
+bool audio_is_paused()     { return is_paused; }
+uint32_t audio_playback_elapsed_sec() { return playback_elapsed_sec; }
+uint32_t audio_playback_total_sec()   { return playback_total_sec; }
+String audio_playback_filename()     { return String(playback_filename_buf); }
+void audio_request_pause_playback() {
+    if (is_playing) is_paused = true;
+}
+void audio_request_resume_playback() {
+    if (is_playing) is_paused = false;
+}
+void audio_request_seek_playback(uint32_t seconds) {
+    if (is_playing) {
+        seek_target_sec = seconds;
+        seek_requested = true;
+    }
+}
 
 // ─────────────────────────────────────────────
 //  Voice note library

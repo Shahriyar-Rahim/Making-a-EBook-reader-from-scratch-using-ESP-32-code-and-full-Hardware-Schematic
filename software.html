@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Software | ESP32-S3 CAM AI eBook Reader</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div class="page-wrap">
+    <aside class="sidebar">
+      <div class="logo">ESP32-S3 CAM AI eBook Reader</div>
+      <div class="nav-search">
+        <input id="search-input" type="search" placeholder="Search docs..." />
+      </div>
+      <nav>
+        <ul class="nav-list">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="overview.html">Overview</a></li>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="architecture.html">Architecture</a></li>
+          <li><a href="hardware.html">Hardware</a></li>
+          <li><a href="software.html">Software</a></li>
+          <li><a href="wiring.html">Wiring</a></li>
+          <li><a href="breadboard.html">Breadboard</a></li>
+          <li><a href="veroboard.html">Veroboard</a></li>
+          <li><a href="pcb.html">PCB</a></li>
+          <li><a href="power-system.html">Power System</a></li>
+          <li><a href="display-system.html">Display System</a></li>
+          <li><a href="camera-system.html">Camera System</a></li>
+          <li><a href="audio-system.html">Audio System</a></li>
+          <li><a href="ai-system.html">AI System</a></li>
+          <li><a href="ocr-system.html">OCR System</a></li>
+          <li><a href="ebook-reader.html">eBook Reader</a></li>
+          <li><a href="sd-storage.html">SD Storage</a></li>
+          <li><a href="networking.html">Networking</a></li>
+          <li><a href="assembly-guide.html">Assembly Guide</a></li>
+          <li><a href="bill-of-materials.html">Bill of Materials</a></li>
+          <li><a href="troubleshooting.html">Troubleshooting</a></li>
+          <li><a href="future-roadmap.html">Future Roadmap</a></li>
+        </ul>
+      </nav>
+      <button class="toggle-theme" data-theme-toggle>Light Mode</button>
+    </aside>
+    <main class="main">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>/</span> Software</div>
+      <div class="section">
+        <h1>Software</h1>
+        <p>The firmware is built using PlatformIO with the Arduino framework and LVGL for the UI. The software stack integrates audio, camera, SD card storage, network connectivity, and AI service calls.</p>
+      </div>
+      <div class="section grid-two searchable">
+        <div class="panel">
+          <h2>Firmware Stack</h2>
+          <ul class="list-panel">
+            <li>PlatformIO build system</li>
+            <li>ESP32-S3 Arduino framework</li>
+            <li>LVGL 8.x for UI rendering</li>
+            <li>TFT_eSPI display driver</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h2>Subsystem Modules</h2>
+          <ul class="list-panel">
+            <li>`audio_engine.cpp/h` — I2S playback, recording, and voice note management</li>
+            <li>`book_engine.cpp/h` — Text and page navigation APIs</li>
+            <li>`reader_ui.cpp/h` — Main user interface, controls, and widgets</li>
+            <li>`network.cpp/h` — Wi-Fi and HTTP request handling</li>
+          </ul>
+        </div>
+      </div>
+      <div class="section panel searchable">
+        <h2>Key Software Features</h2>
+        <ol>
+          <li>Concurrent UI rendering and audio processing using FreeRTOS.</li>
+          <li>SD card file access with mutex locking for safe cross-core operations.</li>
+          <li>AI workflow support for summarization, notes, and OCR text enhancement.</li>
+          <li>OTA update support and network-based logging.</li>
+        </ol>
+      </div>
+      <div class="section">
+        <h2>Development Notes</h2>
+        <p>Recommended workflow: edit source files in `src/`, build with PlatformIO, and deploy via USB with `pio run --target upload`. Maintain the UI state in `reader_ui.cpp` and keep audio control logic centralized in `audio_engine.cpp`.</p>
+      </div>
+    </main>
+  </div>
+  <footer class="footer">ESP32-S3 CAM AI eBook Reader Documentation • Software</footer>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
