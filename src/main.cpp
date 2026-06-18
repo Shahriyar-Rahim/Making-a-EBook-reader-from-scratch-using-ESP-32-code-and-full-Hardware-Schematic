@@ -14,7 +14,14 @@
 
 TFT_eSPI tft = TFT_eSPI();
 
-#define POWER_BUTTON_PIN 1 // Button connected between GPIO 1 and GND
+// Power button pin: DO NOT hardcode UART pins like GPIO1/GPIO3. In
+// production builds make this configurable via a build flag:
+//   -DPOWER_BUTTON_PIN=<gpio>
+// Leaving as -1 disables the runtime power-button handling so systems
+// that wire the UART or use those pins won't break.
+#ifndef POWER_BUTTON_PIN
+#define POWER_BUTTON_PIN -1
+#endif
 
 void checkSDCardBootloader() {
     if (!SD.exists("/update.bin")) {
@@ -64,6 +71,9 @@ void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
 
 // --- BUTTON HARDWARE MONITOR ---
 void checkPowerButtonHardware() {
+    // If the build hasn't provided a usable pin, skip monitoring entirely.
+    if (POWER_BUTTON_PIN < 0) return;
+
     static bool lastButtonState = HIGH;
     static unsigned long buttonPressedTime = 0;
     static bool longPressHandled = false;
@@ -143,7 +153,9 @@ void CoreZeroNetworkTask(void * pvParameters) {
 void setup() {
     Serial.begin(115200);
 
-    pinMode(POWER_BUTTON_PIN, INPUT_PULLUP);
+    if (POWER_BUTTON_PIN >= 0) {
+        pinMode(POWER_BUTTON_PIN, INPUT_PULLUP);
+    }
 
     if (!SD.begin()) {
         Serial.println("Critical error: SD storage bus initialization failed.");
