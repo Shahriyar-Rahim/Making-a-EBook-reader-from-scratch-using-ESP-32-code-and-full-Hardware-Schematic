@@ -4,6 +4,7 @@
 #include <Update.h>
 #include <WiFi.h>
 #include <lvgl.h>
+#include <esp_sleep.h>
 #include "ui_engine.h"
 #include "reader_ui.h"
 #include "network.h"
@@ -85,7 +86,8 @@ void checkPowerButtonHardware() {
             SD.end();
             WiFi.disconnect(true);
 
-            esp_deep_sleep_enable_gpio_wakeup(1ULL << POWER_BUTTON_PIN, ESP_GPIO_WAKEUP_GPIO_LOW);
+            gpio_wakeup_enable((gpio_num_t)POWER_BUTTON_PIN, GPIO_INTR_LOW_LEVEL);
+            esp_sleep_enable_gpio_wakeup();
 
             Serial.println("Entering deep sleep.");
             delay(100);
@@ -154,8 +156,12 @@ void setup() {
     lv_init();
 
     static lv_disp_draw_buf_t draw_buf;
-    static lv_color_t* disp_buf1 = (lv_color_t*) ps_malloc(LV_HOR_RES_MAX * 15 * sizeof(lv_color_t));
-    lv_disp_draw_buf_init(&draw_buf, disp_buf1, NULL, LV_HOR_RES_MAX * 15);
+    // 320 here matches disp_drv.hor_res below — using the literal directly
+    // rather than LV_HOR_RES_MAX, since that macro is only defined when
+    // lv_conf.h sets a fixed LV_HOR_RES, which this project doesn't do
+    // (the resolution is supplied at runtime via disp_drv.hor_res/ver_res).
+    static lv_color_t* disp_buf1 = (lv_color_t*) ps_malloc(320 * 15 * sizeof(lv_color_t));
+    lv_disp_draw_buf_init(&draw_buf, disp_buf1, NULL, 320 * 15);
 
     static lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);

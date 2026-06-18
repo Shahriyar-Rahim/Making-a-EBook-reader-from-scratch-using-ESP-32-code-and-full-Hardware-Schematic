@@ -111,7 +111,7 @@ static bool call_gemini(const String& prompt, String& out_response, String& out_
     String resp = https.getString();
     https.end();
 
-    DynamicJsonDocument doc(16384);
+    JsonDocument doc;
     DeserializationError err = deserializeJson(doc, resp);
     if (err) {
         out_error = "Failed to parse AI response JSON.";
@@ -161,7 +161,7 @@ static bool call_openai(const String& prompt, String& out_response, String& out_
     String resp = https.getString();
     https.end();
 
-    DynamicJsonDocument doc(16384);
+    JsonDocument doc;
     DeserializationError err = deserializeJson(doc, resp);
     if (err) {
         out_error = "Failed to parse AI response JSON.";

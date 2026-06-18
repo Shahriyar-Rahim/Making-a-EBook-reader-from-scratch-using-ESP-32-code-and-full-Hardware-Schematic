@@ -933,7 +933,7 @@ static void build_lock_overlay() {
     lv_obj_set_size(lock_overlay, 320, 480);
     lv_obj_set_pos(lock_overlay, 0, 0);
     lv_obj_set_style_bg_color(lock_overlay, lv_color_make(5, 8, 18), 0);
-    lv_obj_set_style_bg_opa(lock_overlay, LV_OPA_95, 0);
+    lv_obj_set_style_bg_opa(lock_overlay, LV_OPA_90, 0);  // LVGL only defines OPA_10..OPA_90 in steps of 10, no OPA_95
     lv_obj_set_style_border_width(lock_overlay, 0, 0);
     lv_obj_set_style_radius(lock_overlay, 0, 0);
     lv_obj_set_style_opa(lock_overlay, LV_OPA_TRANSP, 0);

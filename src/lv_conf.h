@@ -245,7 +245,7 @@
 #define LV_USE_IMGBTN     0
 #define LV_USE_KEYBOARD   1   // textarea password/text entry on a touch-only device
 #define LV_USE_LED        0
-#define LV_USE_LIST       0   // we build lists manually with lv_obj_create rows
+#define LV_USE_LIST       1   // we build lists manually with lv_obj_create rows
 #define LV_USE_MENU       0
 #define LV_USE_METER      0
 #define LV_USE_MSGBOX      1   // available for future use; cheap to enable

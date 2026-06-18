@@ -1,23 +1,34 @@
 // ═══════════════════════════════════════════════════════════════════
 //  network.cpp  —  Core-0 network task body: AP+STA Wi-Fi (via
-//  wifi_manager), BLE note receiver, web dashboard, OTA updates, and
-//  draining the UI's Wi-Fi connect-request queue.
+//  wifi_manager), BLE note receiver, web dashboard, and draining the
+//  UI's Wi-Fi connect-request queue.
+//
+//  OTA note: firmware updates are handled either by the SD-card
+//  bootloader in main.cpp or by the /ota upload endpoint below.
+//  This file must never include <WebServer.h> or <ElegantOTA.h> — both
+//  pull in an unscoped C enum (http_method) whose bare names
+//  (HTTP_GET, HTTP_POST, ...) collide with ESPAsyncWebServer.h's own
+//  unscoped WebRequestMethod enum. Two unscoped enums sharing
+//  enumerator names in one translation unit is a hard redefinition error.
 // ═══════════════════════════════════════════════════════════════════
 #include "network.h"
 #include "ui_engine.h"
 #include "wifi_manager.h"
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
-// ELEGANTOTA_USE_ASYNC_WEBSERVER=1 is set globally via build_flags in
-// platformio.ini — this switches ElegantOTA to target AsyncWebServer
-// instead of the synchronous WebServer class, which is required since
-// `server` below is an AsyncWebServer. It also avoids ElegantOTA
-// pulling in WebServer.h's HTTP_Method.h, which otherwise collides
-// with AsyncWebServer's own HTTP_GET/HTTP_POST enum.
-#include <ElegantOTA.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
+#include <Update.h>
 #include <SD.h>
+
+// Note: ElegantOTA is intentionally NOT included here.
+// ElegantOTA 2.x includes WebServer.h -> HTTP_Method.h which defines
+// HTTP_GET, HTTP_POST etc. as a plain C enum. ESPAsyncWebServer also
+// defines these identically as WebRequestMethod enum members. The
+// two definitions conflict at compile time (redeclaration error).
+// ElegantOTA 3.x dropped AsyncWebServer support. The workaround used
+// here is a minimal manual OTA endpoint implemented directly with
+// AsyncWebServer's upload API — same result, no dependency conflict.
 
 AsyncWebServer server(80);
 
@@ -42,6 +53,41 @@ class InboundNoteReceiver: public BLECharacteristicCallbacks {
     }
 };
 
+// ─────────────────────────────────────────────
+//  OTA upload state (lives on Core 0 only)
+// ─────────────────────────────────────────────
+static bool ota_in_progress = false;
+
+static void handle_ota_upload(AsyncWebServerRequest* request,
+                               const String& filename,
+                               size_t index, uint8_t* data,
+                               size_t len, bool final) {
+    if (index == 0) {
+        Serial.printf("[OTA] Upload start: %s\n", filename.c_str());
+        if (!Update.begin(UPDATE_SIZE_UNKNOWN, U_FLASH)) {
+            Update.printError(Serial);
+        }
+        ota_in_progress = true;
+    }
+
+    if (Update.write(data, len) != len) {
+        Update.printError(Serial);
+    }
+
+    if (final) {
+        if (Update.end(true)) {
+            Serial.printf("[OTA] Upload complete: %u bytes. Rebooting...\n", index + len);
+            post_toast("OTA done — rebooting");
+            delay(500);
+            ESP.restart();
+        } else {
+            Update.printError(Serial);
+            post_toast("OTA failed — check serial");
+        }
+        ota_in_progress = false;
+    }
+}
+
 void init_network_subsystems() {
     // 1. Wi-Fi: AP always-on + best-effort STA reconnect to a saved network.
     //    wifi_manager_init() starts the AP and kicks off a saved-credential
@@ -65,7 +111,7 @@ void init_network_subsystems() {
     post_network_status(true, true);
 
     // 3. Web dashboard
-    server.on("/", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
         String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Control Deck</title>";
         html += "<style>body{background:#0b0f19;color:#e2e8f0;font-family:sans-serif;padding:30px;}";
         html += ".card{background:#1e293b;padding:25px;border-radius:12px;margin-bottom:20px;box-shadow:0 4px 10px rgba(0,0,0,0.3);}";
@@ -91,14 +137,19 @@ void init_network_subsystems() {
         html += "<button type='submit'>Save to SD Card</button></form></div>";
 
         html += "<div class='card'><h3>Library</h3>";
-        html += "<p>Upload .txt or .epub files to /Books/ via the OTA file manager or a card reader.</p>";
+        html += "<p>Upload .txt or .epub files to /Books/ via a card reader on the SD card.</p>";
         html += "</div>";
+        html += "<div class='card'><h3>&#128260; OTA Firmware Update</h3>";
+        html += "<p>Upload a compiled .bin firmware file and the device will reboot when done.</p>";
+        html += "<form method='POST' action='/ota' enctype='multipart/form-data'>";
+        html += "<input type='file' name='firmware' accept='.bin'>";
+        html += "<button type='submit'>Flash Firmware</button></form></div>";
 
         html += "</body></html>";
         request->send(200, "text/html", html);
     });
 
-    server.on("/update_sys", AsyncWebRequestMethod::HTTP_POST, [](AsyncWebServerRequest *request){
+    server.on("/update_sys", HTTP_POST, [](AsyncWebServerRequest *request){
         if (request->hasParam("limit", true)) {
             charge_limit_threshold = request->getParam("limit", true)->value().toInt();
         }
@@ -109,31 +160,30 @@ void init_network_subsystems() {
         request->redirect("/");
     });
 
-    server.on("/save_note", AsyncWebRequestMethod::HTTP_POST, [](AsyncWebServerRequest *request){
+    server.on("/save_note", HTTP_POST, [](AsyncWebServerRequest *request){
         if (request->hasParam("note_content", true)) {
             String txt = request->getParam("note_content", true)->value();
             if (xSemaphoreTake(sd_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
-                File notebook = SD.open("/notes.txt", FILE_APPEND);
-                if (notebook) {
-                    notebook.printf("[Web Dashboard Note]: %s\n", txt.c_str());
-                    notebook.close();
-                }
+                File f = SD.open("/notes.txt", FILE_APPEND);
+                if (f) { f.printf("[Web Note]: %s\n", txt.c_str()); f.close(); }
                 xSemaphoreGive(sd_mutex);
             }
         }
         request->redirect("/");
     });
 
-    // 4. OTA update endpoint
-    ElegantOTA.begin(&server);
+    // Manual OTA endpoint — no ElegantOTA dependency
+    server.on("/ota", HTTP_POST,
+        [](AsyncWebServerRequest *request){ request->send(200, "text/plain", "OTA triggered"); },
+        handle_ota_upload
+    );
+
     server.begin();
 
     Serial.println("[Network] Subsystems initialized.");
 }
 
 void handle_network_comms() {
-    ElegantOTA.loop();
-
     // Retry/maintain the STA connection and run NTP sync when it lands
     wifi_manager_tick();
 

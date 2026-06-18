@@ -434,7 +434,7 @@ static void build_tab_reader() {
     lv_obj_align(bookmark_btn, LV_ALIGN_BOTTOM_RIGHT, -4, -6);
     lv_obj_set_style_bg_color(bookmark_btn, lv_color_make(30,41,59), 0);
     lv_obj_t* bm_lbl = lv_label_create(bookmark_btn);
-    lv_label_set_text(bm_lbl, LV_SYMBOL_BOOKMARK);
+    lv_label_set_text(bm_lbl, LV_SYMBOL_SAVE);  // no LV_SYMBOL_BOOKMARK exists in LVGL; SAVE doubles as "save my place"
     lv_obj_set_style_text_font(bm_lbl, &lv_font_montserrat_12, 0);
     lv_obj_center(bm_lbl);
     lv_obj_add_event_cb(bookmark_btn, reader_bookmark_cb, LV_EVENT_CLICKED, nullptr);
@@ -1167,9 +1167,14 @@ void reader_ui_init(lv_obj_t* parent_tabview) {
     active_reader_font  = (ReaderFontSize)p.getInt("font",  (int)FONT_MEDIUM);
     p.end();
 
-    g_library_tab_index = lv_tabview_get_tab_count(parent_tabview);
+    // lv_tabview_get_tab_count() is an LVGL 9.x-only function and does
+    // not exist in 8.3 — this project's tabs are always added in a
+    // fixed, known order (ui_engine.cpp adds Draw=0, Notes=1, Sys=2
+    // before calling this function), so the indices below are simply
+    // hardcoded to match that order rather than queried at runtime.
+    g_library_tab_index = 3;
     tab_library  = lv_tabview_add_tab(parent_tabview, LV_SYMBOL_DIRECTORY "  Library");
-    g_reader_tab_index = lv_tabview_get_tab_count(parent_tabview);
+    g_reader_tab_index = 4;
     tab_reader   = lv_tabview_add_tab(parent_tabview, LV_SYMBOL_FILE "  Reader");
     tab_ai_study = lv_tabview_add_tab(parent_tabview, LV_SYMBOL_IMAGE "  AI");
     tab_camera   = lv_tabview_add_tab(parent_tabview, LV_SYMBOL_IMAGE "  Cam");
