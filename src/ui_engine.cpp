@@ -6,6 +6,7 @@
 // ═══════════════════════════════════════════════════════════════════
 #include "ui_engine.h"
 #include "reader_ui.h"
+#include "power_manager.h"
 #include <TFT_eSPI.h>
 #include <XPT2046_Touchscreen.h>
 #include <SD.h>
@@ -71,6 +72,7 @@ static lv_obj_t* canvas          = nullptr;
 static lv_obj_t* notes_textarea  = nullptr;
 static lv_obj_t* sys_battery_arc = nullptr;
 static lv_obj_t* sys_info_label  = nullptr;
+static lv_obj_t* sys_power_label = nullptr;
 static lv_obj_t* toast_label     = nullptr;
 static lv_obj_t* lock_overlay    = nullptr;
 static lv_obj_t* shared_keyboard = nullptr;
@@ -98,6 +100,7 @@ static void build_tab_sys();
 static void build_lock_overlay();
 static void build_shared_keyboard();
 static void canvas_event_cb(lv_event_t* e);
+static void update_system_info_text();
 static void color_btn_cb(lv_event_t* e);
 static void brush_slider_cb(lv_event_t* e);
 static void clear_btn_cb(lv_event_t* e);
@@ -131,7 +134,8 @@ static void read_battery_adc() {
     pct = constrain(pct, 0, 100);
 
     bool charging = (digitalRead(CHARGE_STAT_PIN) == LOW);
-    post_battery_update(pct, charging);
+    power_manager_tick(pct, charging);
+    post_battery_update(power_metrics.battery_pct, power_metrics.charging);
 }
 
 // ─────────────────────────────────────────────
@@ -282,6 +286,47 @@ void post_library_refresh() {
     xQueueSend(ui_event_queue, &msg, 0);
 }
 
+static void update_system_info_text() {
+    if (!sys_info_label || !sys_power_label) return;
+
+    char info_buf[320];
+    snprintf(info_buf, sizeof(info_buf),
+        "CPU:   ESP32-S3 @ 240 MHz\n"
+        "Flash: 16 MB (QIO)\n"
+        "PSRAM: 8 MB (OPI)\n"
+        "Free Heap: %lu KB\n"
+        "Free PSRAM: %lu KB\n"
+        "SD Card: %s\n"
+        "Charge Limit: %d%%\n"
+        "Brightness: %d%%\n"
+        "Overchg Prot: %s",
+        ESP.getFreeHeap()      / 1024,
+        ESP.getFreePsram()     / 1024,
+        sd_card_ok ? "OK" : "Not found",
+        charge_limit_threshold,
+        global_brightness,
+        overcharge_protection_enabled ? "ON" : "OFF"
+    );
+    lv_label_set_text(sys_info_label, info_buf);
+
+    char power_buf[280];
+    snprintf(power_buf, sizeof(power_buf),
+        "Voltage: %.2f V\n"
+        "Current: %.1f mA\n"
+        "Power: %.1f mW\n"
+        "Runtime: %s\n"
+        "Charger: %s\n"
+        "Ctrl: %s",
+        power_metrics.battery_voltage,
+        power_metrics.battery_current,
+        power_metrics.battery_power,
+        power_metrics.estimated_runtime_minutes >= 0 ? String(power_metrics.estimated_runtime_minutes).c_str() : "N/A",
+        power_metrics.charging ? "Yes" : "No",
+        power_metrics.charger_control_available ? (power_metrics.charge_limit_engaged ? "Limited" : "Enabled") : "Not avail"
+    );
+    lv_label_set_text(sys_power_label, power_buf);
+}
+
 // Called from loop() on Core 1, already inside lvgl_mutex
 void process_ui_events() {
     UIEventMsg msg;
@@ -324,6 +369,7 @@ void process_ui_events() {
             if (sys_battery_arc) {
                 lv_arc_set_value(sys_battery_arc, battery_percentage);
             }
+            update_system_info_text();
             break;
         }
 
@@ -817,26 +863,13 @@ static void build_tab_sys() {
     lv_obj_set_style_text_font(sys_info_label, &lv_font_montserrat_10, 0);
     lv_obj_set_style_text_color(sys_info_label, lv_color_make(148, 163, 184), 0);
 
-    char info_buf[280];
-    snprintf(info_buf, sizeof(info_buf),
-        "CPU:   ESP32-S3 @ 240 MHz\n"
-        "Flash: 16 MB (QIO)\n"
-        "PSRAM: 8 MB (OPI)\n"
-        "Free Heap: %lu KB\n"
-        "Free PSRAM: %lu KB\n"
-        "SD Card: %s\n"
-        "Display: 320x480 ILI\n"
-        "Charge Limit: %d%%\n"
-        "Brightness: %d%%\n"
-        "Overchg Prot: %s",
-        ESP.getFreeHeap()      / 1024,
-        ESP.getFreePsram()     / 1024,
-        sd_card_ok ? "OK" : "Not found",
-        charge_limit_threshold,
-        global_brightness,
-        overcharge_protection_enabled ? "ON" : "OFF"
-    );
-    lv_label_set_text(sys_info_label, info_buf);
+    sys_power_label = lv_label_create(tab_sys);
+    lv_obj_set_size(sys_power_label, 180, LV_SIZE_CONTENT);
+    lv_obj_align_to(sys_power_label, sys_info_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+    lv_obj_set_style_text_font(sys_power_label, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(sys_power_label, lv_color_make(148, 163, 184), 0);
+
+    update_system_info_text();
 
     // Brightness slider
     lv_obj_t* br_lbl = lv_label_create(tab_sys);
@@ -876,10 +909,12 @@ static void build_tab_sys() {
     lv_obj_add_event_cb(cl_slider, [](lv_event_t* e) {
         lv_obj_t* s = lv_event_get_target(e);
         charge_limit_threshold = (int)lv_slider_get_value(s);
+        power_manager_set_charge_limit(charge_limit_threshold);
         // Save to NVS
         prefs.begin("workbench", false);
         prefs.putInt("charge_limit", charge_limit_threshold);
         prefs.end();
+        update_system_info_text();
     }, LV_EVENT_VALUE_CHANGED, nullptr);
 
     // Overcharge toggle
@@ -907,6 +942,7 @@ static void build_tab_sys() {
         prefs.begin("workbench", false);
         prefs.putBool("oc_prot", overcharge_protection_enabled);
         prefs.end();
+        update_system_info_text();
     }, LV_EVENT_VALUE_CHANGED, nullptr);
 
     // Reboot button
@@ -1058,6 +1094,9 @@ void init_ui_engine() {
     ledcSetup(0, 5000, 8);
     ledcAttachPin(TFT_BL_PIN, 0);
     set_display_brightness(global_brightness);
+
+    power_manager_set_charge_limit(charge_limit_threshold);
+    power_manager_init();
 
     // Input driver
     static lv_indev_drv_t indev_drv;

@@ -14,6 +14,7 @@
 #include "network.h"
 #include "ui_engine.h"
 #include "wifi_manager.h"
+#include "power_manager.h"
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <BLEDevice.h>
@@ -123,6 +124,11 @@ void init_network_subsystems() {
         html += "<div class='card'><h3>Status</h3>";
         html += "<p>STA Network: " + (WiFi.status() == WL_CONNECTED ? WiFi.SSID() : String("Not connected")) + "</p>";
         html += "<p>Battery: " + String(battery_percentage) + "%" + (is_charging ? " (charging)" : "") + "</p>";
+        html += "<p>Voltage: " + String(power_metrics.battery_voltage, 2) + " V</p>";
+        html += "<p>Current: " + String(power_metrics.battery_current, 1) + " mA</p>";
+        html += "<p>Power: " + String(power_metrics.battery_power, 1) + " mW</p>";
+        html += "<p>Estimated Runtime: " + (power_metrics.estimated_runtime_minutes >= 0 ? String(power_metrics.estimated_runtime_minutes) + " min" : String("N/A")) + "</p>";
+        html += "<p>Charger Control: " + String(power_metrics.charger_control_available ? (power_metrics.charge_limit_engaged ? "Limited" : "Enabled") : "Unavailable") + "</p>";
         html += "</div>";
 
         html += "<div class='card'><h3>System Settings</h3>";
@@ -152,6 +158,7 @@ void init_network_subsystems() {
     server.on("/update_sys", HTTP_POST, [](AsyncWebServerRequest *request){
         if (request->hasParam("limit", true)) {
             charge_limit_threshold = request->getParam("limit", true)->value().toInt();
+            power_manager_set_charge_limit(charge_limit_threshold);
         }
         if (request->hasParam("bright", true)) {
             int target_b = request->getParam("bright", true)->value().toInt();
